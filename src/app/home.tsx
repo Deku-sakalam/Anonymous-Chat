@@ -8,7 +8,7 @@ import createPost, {
   LikePost,
   Post,
 } from "./db";
-import bankerslogo from "./Icon/bankers.png";
+import bankerslogo from "./icon/bankers.png";
 
 export default function AnonymousChat() {
   const [hidden, setHidden] = useState(true);
