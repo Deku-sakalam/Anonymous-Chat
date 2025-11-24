@@ -1,65 +1,159 @@
-import Image from "next/image";
+"use client"
+import { useEffect, useState } from "react";
+import createPost, { commentPost, DisLikePost, GetPosts, LikePost, Post } from "./db";
+import bankerslogo from "./Icon/bankers.png";
 
 export default function Home() {
+  const [hidden, setHidden] = useState(true);
+  const [textV, setTextV] = useState("");
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [com, setCom] = useState("");
+  const [textbox, setTextbox] = useState<string | undefined>();
+  const [deviceID, setDeviceId] = useState<string>();
+
+  useEffect(() => {
+    const existingDeviceID = localStorage.getItem("DeviceId");
+    if (!existingDeviceID) {
+      const randomId = crypto.randomUUID();
+      localStorage.setItem("DeviceId", randomId);
+      setDeviceId(randomId);
+    } else {
+      setDeviceId(existingDeviceID);
+    }
+  }, []);
+
+  useEffect(() => {
+    setPosts(GetPosts());
+  }, []);
+
+  useEffect(() => {
+    if (!textV) {
+      setHidden(true);
+    }
+  }, [textV]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="wrapper">
+      <div className="body">
+        <div className="box">
+          <div className="upperbox">
+            <img className="bankers" src={bankerslogo.src} alt={bankerslogo.src} />
+            Bankers Village 1 HomeOwners Association
+          </div>
+          <div className="lowerbox">
+            <textarea
+              className="textarea"
+              value={textV}
+              onChange={(e) => {
+                setTextV(e.target.value);
+                setHidden(false);
+              }}
+            ></textarea>
+          </div>
+          <div className="send" hidden={hidden}>
+            <button
+              onClick={() => {
+                if (textV) {
+                  const newPost = createPost(textV);
+                  setTextV("");
+                  setPosts(newPost);
+                }
+              }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Post!
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="containerMessages" >
+          {[...posts].reverse().map((post: Post) => {
+            const comments = post.comments;
+            const formattedDate = new Date(post.date).toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            });
+            return (
+              <div className="parentMessage" key={post.id}>
+                <div className="containerMessage">
+                  <div className="userName">{formattedDate}</div>
+                  <div className="message">{post.content}</div>
+                  <div className="action">
+                    <button
+                      onClick={() => {
+                        if (deviceID) {
+                          const newPosts = LikePost(post.id, deviceID);
+                          if (newPosts) setPosts(newPosts);
+                        }
+                      }}
+                    >
+                      {post.like.length}👍like
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (deviceID) {
+                          const newPosts = DisLikePost(post.id, deviceID);
+                          if (newPosts) setPosts(newPosts);
+                        }
+                      }}
+                    >
+                      {post.disLike.length}👎dislike
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTextbox(post.id);
+                        setCom("");
+                      }}
+                    >
+                      💬Comment
+                    </button>
+                    <button>➣Share</button>
+                  </div>
+                  <div className={textbox === post.id ? "textbox" : "closed"}>
+                    <textarea
+                      value={com}
+                      onChange={(e) => {
+                        setCom(e.target.value);
+                      }}
+                    ></textarea>
+                    <button
+                      onClick={() => {
+                        const newPost = commentPost(post.id, com);
+                        setPosts(newPost);
+                        setTextbox(undefined);
+                      }}
+                    >
+                      submit
+                    </button>
+                  </div>
+                  <div>
+                    {[...comments].reverse().map((id) => {
+                      const commentDate = new Date(id.date).toLocaleString(
+                        "en-US",
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        }
+                      );
+                      return (
+                        <div className="">
+                          <div className="userName">{commentDate}</div>
+                          <div className="message">{id.content}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </main>
+      </div>
+      <div></div>
     </div>
   );
 }
