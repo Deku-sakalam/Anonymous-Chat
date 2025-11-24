@@ -1,3 +1,4 @@
+import { sql } from "@vercel/postgres";
 const POSTKEY = "content";
 export type Post = {
   id: string;
@@ -76,6 +77,11 @@ export function commentPost(id: string, content: string) {
   });
   localStorage.setItem(POSTKEY, JSON.stringify(posts));
   return posts;
+}
+
+export async function fetchData() {
+  const { rows } = await sql`SELECT * FROM users;`;
+  return rows;
 }
 
 export default createPost;
