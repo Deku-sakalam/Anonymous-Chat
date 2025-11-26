@@ -16,6 +16,8 @@ export default function AnonymousChat() {
   const [com, setCom] = useState("");
   const [textbox, setTextbox] = useState<string | undefined>();
   const [deviceID, setDeviceId] = useState<string>();
+  const [likeloading, setLikeLoading] = useState(false);
+  const [disLikeloading, setDisLikeLoading] = useState(false);
 
   useEffect(() => {
     const existingDeviceID = localStorage.getItem("DeviceId");
@@ -92,9 +94,13 @@ export default function AnonymousChat() {
                   <div className="message">{post.content}</div>
                   <div className="action">
                     <button
+                      disabled={likeloading}
                       onClick={async () => {
                         if (deviceID) {
-                          LikePost(post.id, deviceID);
+                          setLikeLoading(true);
+                          LikePost(post.id, deviceID).finally(() => {
+                            setLikeLoading(false);
+                          });
                           setPosts((p) => {
                             return p.map((p) =>
                               p.id === post.id
@@ -117,9 +123,13 @@ export default function AnonymousChat() {
                       {post.like?.length}👍like
                     </button>
                     <button
+                      disabled={disLikeloading}
                       onClick={() => {
+                        setDisLikeLoading(true);
                         if (deviceID) {
-                          DisLikePost(post.id, deviceID);
+                          DisLikePost(post.id, deviceID).finally(() => {
+                            setDisLikeLoading(false);
+                          });
                           setPosts((p) => {
                             return p.map((p) =>
                               p.id === post.id
