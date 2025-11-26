@@ -6,7 +6,6 @@ import {
   updateLike,
 } from "./actions";
 
-const POSTKEY = "content";
 export type Post = {
   id: string;
   content: string;
