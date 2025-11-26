@@ -94,14 +94,19 @@ export default function AnonymousChat() {
                     <button
                       onClick={async () => {
                         if (deviceID) {
-                          const newPosts = await LikePost(post.id, deviceID);
+                          LikePost(post.id, deviceID);
                           setPosts((p) => {
                             return p.map((p) =>
                               p.id === post.id
                                 ? {
                                     ...p,
-                                    like: newPosts[0].like,
-                                    dislike: newPosts[0].dislike,
+                                    like: p.like.includes(deviceID)
+                                      ? p.like.filter((d) => d !== deviceID)
+                                      : [...p.like, deviceID],
+
+                                    dislike: p.dislike.includes(deviceID)
+                                      ? p.dislike.filter((d) => d !== deviceID)
+                                      : p.dislike,
                                   }
                                 : p
                             );
@@ -112,16 +117,21 @@ export default function AnonymousChat() {
                       {post.like?.length}👍like
                     </button>
                     <button
-                      onClick={async () => {
+                      onClick={() => {
                         if (deviceID) {
-                          const newPosts = await DisLikePost(post.id, deviceID);
+                          DisLikePost(post.id, deviceID);
                           setPosts((p) => {
                             return p.map((p) =>
                               p.id === post.id
                                 ? {
                                     ...p,
-                                    like: newPosts[0].like,
-                                    dislike: newPosts[0].dislike,
+                                    dislike: p.dislike.includes(deviceID)
+                                      ? p.dislike.filter((d) => d !== deviceID)
+                                      : [...p.dislike, deviceID],
+
+                                    like: p.like.includes(deviceID)
+                                      ? p.like.filter((d) => d !== deviceID)
+                                      : p.like,
                                   }
                                 : p
                             );
