@@ -1,10 +1,17 @@
-import { sql } from "@vercel/postgres";
+import {
+  createCommmentPost,
+  getAll,
+  insertPost,
+  updateDisLike,
+  updateLike,
+} from "./actions";
+
 const POSTKEY = "content";
 export type Post = {
   id: string;
   content: string;
   like: string[];
-  disLike: string[];
+  dislike: string[];
   date: Date;
   comments: {
     id: string;
@@ -13,75 +20,29 @@ export type Post = {
   }[];
 };
 
-function createPost(content: string) {
-  const lStorage = localStorage.getItem(POSTKEY);
-  const jLStorage = lStorage ? JSON.parse(lStorage) : [];
-  jLStorage.push({
-    id: crypto.randomUUID(),
-    content: content,
-    date: new Date(),
-    like: [],
-    disLike: [],
-    comments: [],
-  });
-  localStorage.setItem(POSTKEY, JSON.stringify(jLStorage));
-  return jLStorage;
+async function createPost(content: string) {
+  const result = await insertPost(content);
+  return result;
 }
 
-export function GetPosts() {
-  const lStorage = localStorage.getItem(POSTKEY);
-  const jLStorage = lStorage ? JSON.parse(lStorage) : [];
-  return jLStorage;
+export async function GetPosts() {
+  const result = await getAll();
+  return result;
 }
 
-export function LikePost(id: string, deviceid: string) {
-  const lStorage = localStorage.getItem(POSTKEY);
-  const posts = (lStorage ? JSON.parse(lStorage) : []) as Post[];
-  const index = posts.findIndex((post: Post) => post.id === id);
-  const likes = posts[index].like;
-  const lIndex = likes.indexOf(deviceid);
-  if (lIndex !== -1) {
-    likes.splice(lIndex, 1);
-  } else {
-    likes.push(deviceid);
-  }
-  localStorage.setItem(POSTKEY, JSON.stringify(posts));
-  return posts;
+export async function LikePost(id: string, deviceId: string) {
+  const result = await updateLike(id, deviceId);
+  return result;
 }
 
-export function DisLikePost(id: string, deviceid: string) {
-  const lStorage = localStorage.getItem(POSTKEY);
-  const posts = (lStorage ? JSON.parse(lStorage) : []) as Post[];
-
-  const index = posts.findIndex((post: Post) => post.id === id);
-  const dislikes = posts[index].disLike;
-  const dIndex = dislikes.indexOf(deviceid);
-
-  if (dIndex !== -1) {
-    dislikes.splice(dIndex, 1);
-  } else {
-    dislikes.push(deviceid);
-  }
-  localStorage.setItem(POSTKEY, JSON.stringify(posts));
-  return posts;
+export async function DisLikePost(id: string, deviceId: string) {
+  const result = await updateDisLike(id, deviceId);
+  return result;
 }
 
 export function commentPost(id: string, content: string) {
-  const lStorage = localStorage.getItem(POSTKEY);
-  const posts = lStorage ? JSON.parse(lStorage) : [];
-  const index = posts.findIndex((posts: Post) => posts.id === id);
-  posts[index].comments.push({
-    id: crypto.randomUUID(),
-    content: content,
-    date: new Date(),
-  });
-  localStorage.setItem(POSTKEY, JSON.stringify(posts));
-  return posts;
-}
-
-export async function fetchData() {
-  const { rows } = await sql`SELECT * FROM users;`;
-  return rows;
+  const result = createCommmentPost(id, content);
+  return result;
 }
 
 export default createPost;

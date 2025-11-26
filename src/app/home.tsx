@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import createPost, {
   commentPost,
   DisLikePost,
-  fetchData,
   GetPosts,
   LikePost,
   Post,
@@ -30,7 +29,9 @@ export default function AnonymousChat() {
   }, []);
 
   useEffect(() => {
-    setPosts(GetPosts());
+    GetPosts().then((result) => {
+      if (result) setPosts(result);
+    });
   }, []);
 
   useEffect(() => {
@@ -38,7 +39,6 @@ export default function AnonymousChat() {
       setHidden(true);
     }
   }, [textV]);
-
   return (
     <div className="wrapper">
       <div className="body">
@@ -63,11 +63,11 @@ export default function AnonymousChat() {
           </div>
           <div className="send" hidden={hidden}>
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (textV) {
-                  const newPost = createPost(textV);
+                  const newPost = await createPost(textV);
+                  setPosts((p) => [...p, ...(newPost as Post[])]);
                   setTextV("");
-                  setPosts(newPost);
                 }
               }}
             >
@@ -77,7 +77,7 @@ export default function AnonymousChat() {
         </div>
         <div className="containerMessages">
           {[...posts].reverse().map((post: Post) => {
-            const comments = post.comments;
+            const comments = post.comments ?? [];
             const formattedDate = new Date(post.date).toLocaleString("en-US", {
               month: "short",
               day: "numeric",
@@ -88,28 +88,48 @@ export default function AnonymousChat() {
             return (
               <div className="parentMessage" key={post.id}>
                 <div className="containerMessage">
-                  <div className="userName">{formattedDate}</div>
+                  <div className="userName">Anonymous {formattedDate}</div>
                   <div className="message">{post.content}</div>
                   <div className="action">
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         if (deviceID) {
-                          const newPosts = LikePost(post.id, deviceID);
-                          if (newPosts) setPosts(newPosts);
+                          const newPosts = await LikePost(post.id, deviceID);
+                          setPosts((p) => {
+                            return p.map((p) =>
+                              p.id === post.id
+                                ? {
+                                    ...p,
+                                    like: newPosts[0].like,
+                                    dislike: newPosts[0].dislike,
+                                  }
+                                : p
+                            );
+                          });
                         }
                       }}
                     >
-                      {post.like.length}👍like
+                      {post.like?.length}👍like
                     </button>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         if (deviceID) {
-                          const newPosts = DisLikePost(post.id, deviceID);
-                          if (newPosts) setPosts(newPosts);
+                          const newPosts = await DisLikePost(post.id, deviceID);
+                          setPosts((p) => {
+                            return p.map((p) =>
+                              p.id === post.id
+                                ? {
+                                    ...p,
+                                    like: newPosts[0].like,
+                                    dislike: newPosts[0].dislike,
+                                  }
+                                : p
+                            );
+                          });
                         }
                       }}
                     >
-                      {post.disLike.length}👎dislike
+                      {post.dislike?.length}👎dislike
                     </button>
                     <button
                       onClick={() => {
@@ -129,9 +149,18 @@ export default function AnonymousChat() {
                       }}
                     ></textarea>
                     <button
-                      onClick={() => {
-                        const newPost = commentPost(post.id, com);
-                        setPosts(newPost);
+                      onClick={async () => {
+                        const newPost = await commentPost(post.id, com);
+                        setPosts((p) => {
+                          return p.map((p) =>
+                            p.id === post.id
+                              ? {
+                                  ...p,
+                                  comments: newPost[0].comments,
+                                }
+                              : p
+                          );
+                        });
                         setTextbox(undefined);
                       }}
                     >
@@ -139,8 +168,8 @@ export default function AnonymousChat() {
                     </button>
                   </div>
                   <div>
-                    {[...comments].reverse().map((id) => {
-                      const commentDate = new Date(id.date).toLocaleString(
+                    {[...comments].reverse().map((comment) => {
+                      const commentDate = new Date(comment.date).toLocaleString(
                         "en-US",
                         {
                           month: "short",
@@ -151,9 +180,9 @@ export default function AnonymousChat() {
                         }
                       );
                       return (
-                        <div className="">
+                        <div className="" key={comment.id}>
                           <div className="userName">{commentDate}</div>
-                          <div className="message">{id.content}</div>
+                          <div className="message">{comment.content}</div>
                         </div>
                       );
                     })}
