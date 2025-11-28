@@ -1,17 +1,21 @@
 import {
   createCommmentPost,
+  deleteSingle,
   getAll,
+  getSingle,
   insertPost,
   updateDisLike,
   updateLike,
 } from "./actions";
 
 export type Post = {
+  deviceId: string;
   id: string;
   content: string;
   like: string[];
   dislike: string[];
   date: Date;
+  handle: string;
   comments: {
     id: string;
     content: string;
@@ -19,13 +23,13 @@ export type Post = {
   }[];
 };
 
-async function createPost(content: string) {
-  const result = await insertPost(content);
+async function createPost(content: string, handle: string, deviceId: string) {
+  const result = await insertPost(content, handle, deviceId);
   return result;
 }
 
-export async function GetPosts() {
-  const result = await getAll();
+export async function GetPosts(handle: string) {
+  const result = await getAll(handle);
   return result;
 }
 
@@ -39,9 +43,16 @@ export async function DisLikePost(id: string, deviceId: string) {
   return result;
 }
 
-export function commentPost(id: string, content: string) {
-  const result = createCommmentPost(id, content);
+export async function commentPost(id: string, content: string) {
+  const result = await createCommmentPost(id, content);
   return result;
 }
-
+export async function sharePost(id: string) {
+  const result = await getSingle(id);
+  return result;
+}
+export async function deletePost(id: string, deviceId: string) {
+  const result = await deleteSingle(id, deviceId);
+  return result;
+}
 export default createPost;

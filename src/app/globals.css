@@ -1,8 +1,9 @@
+/* 🌙 DARK GRADIENT BACKGROUND */
 html {
-  background: #EC1187 linear-gradient(to bottom right, #EC1187 0%, #FF8D10 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
   background-repeat: no-repeat;
   background-attachment: fixed;
-  background-position: center center;
+  background-size: cover;
   width: 100vw;
   height: 100vh;
   height: -webkit-fill-available;
@@ -23,21 +24,25 @@ html {
   max-width: 500px;
 }
 
+/* HEADER AREA */
 .upperbox {
   padding-left: 1rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
-  background-color: white;
+  background-color: #222;
+  color: white;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
 }
 
+/* TEXTAREA BACKGROUND */
 .lowerbox {
-  background-color: rgb(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.08);
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
 
+/* MESSAGES CONTAINER */
 .containerMessages {
   display: flex;
   padding-top: 0.5rem;
@@ -45,22 +50,92 @@ html {
   align-items: center;
 }
 
+/* USERNAME & DATE LABELS */
 .userName {
+  display: flex;
   padding-left: 1rem;
   font-family: 'Courier New', Courier, monospace;
+  justify-content: space-between;
+  padding-right: 1rem;
+  color: #ddd;
 }
 
+.userName button {
+  color: #ddd;
+  border: none;
+  background-color: transparent;
+}
+
+/* HOMEPAGE BOX */
+.homeWrapper {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  padding: 20px;
+}
+
+.introBox {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 40px;
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  color: white;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.4);
+}
+
+.logo {
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: white;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #ccc;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+/* GET STARTED BUTTON */
+.startButton {
+  background-color: #ff8d10;
+  color: black;
+  padding: 12px 26px;
+  border: none;
+  font-size: 1.1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.startButton:hover {
+  background-color: #ffb047;
+  transform: translateY(-2px);
+}
+
+/* MESSAGE CARD */
 .containerMessage {
   font-family: Arial, Helvetica, sans-serif;
-  background-color: white;
+  background-color: #222;
+  color: #ddd;
   padding-top: 1rem;
   border-radius: 20px;
 }
 
 .message {
   padding: 1rem;
+  color: #eee;
 }
 
+/* ACTION BUTTONS */
 .action {
   display: flex;
   justify-content: center;
@@ -71,25 +146,26 @@ html {
 .action button {
   max-width: 500px;
   width: 100%;
-  color: black;
+  color: #ccc;
   border: none;
-  background-color: white;
+  background-color: transparent;
 }
 
 .action button:hover {
   transform: scale(0.95);
-  background: rgb(245, 245, 245, 1);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .action button:active {
   transform: scale(0.95);
-  background: rgb(255, 255, 255, 1);
+  background: rgba(255, 255, 255, 0.15);
 }
 
+/* LOGO IN HEADER */
 .bankers {
   height: 40px;
   width: 40px;
-  padding-right: 1rem
+  padding-right: 1rem;
 }
 
 .parentMessage {
@@ -98,6 +174,7 @@ html {
   margin-bottom: 1rem;
 }
 
+/* TEXTAREA FOR POST */
 .textarea {
   padding-top: 1rem;
   border-bottom-left-radius: 20px;
@@ -112,12 +189,14 @@ html {
   margin-right: auto;
   border: none;
   outline: none;
+  color: white;
 }
 
 .send {
   padding-top: 1rem;
 }
 
+/* POST BUTTON (BLACK VERSION) */
 .send button {
   width: 100%;
   padding-top: 1rem;
@@ -125,35 +204,25 @@ html {
   font-size: 20px;
   max-width: 500px;
   border-radius: 20px;
-  background-color: black;
-  color: white;
+  background-color: #ff8d10;
+  color: black;
 }
 
-.textbox button:hover {
-  transform: scale(0.95);
-  background: rgb(235, 235, 235, 1);
+.send button:hover {
+  background-color: #ffb047;
 }
 
-.textbox button:active {
-  transform: scale(0.95);
-  background: rgb(255, 255, 255, 1);
-}
-
+/* COMMENT BOX */
 .textbox {
   display: flex;
   padding: 0.4rem;
   max-width: 500px;
   border-radius: 20px;
   border-style: solid;
-  border-color: #9b9797;
+  border-color: #555;
+  background-color: #111;
   align-items: flex-end;
   justify-content: flex-end;
-}
-
-.textbox button {
-  height: 20px;
-  border: none;
-  outline: none
 }
 
 .textbox textarea {
@@ -165,6 +234,21 @@ html {
   field-sizing: content;
   border-radius: 20px;
   padding-left: 0.5rem;
+  background-color: transparent;
+  color: white;
+}
+
+.textbox button {
+  height: 20px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #ddd;
+}
+
+.textbox button:hover {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .closed {

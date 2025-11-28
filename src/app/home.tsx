@@ -2,20 +2,22 @@
 import { useEffect, useState } from "react";
 import createPost, {
   commentPost,
+  deletePost,
   DisLikePost,
   GetPosts,
   LikePost,
   Post,
+  sharePost,
 } from "./db";
-import bankerslogo from "./icon/bankers.png";
 
-export default function AnonymousChat() {
+export default function AnonymousChat(props: { handle: string }) {
+  const { handle } = props;
   const [hidden, setHidden] = useState(true);
   const [textV, setTextV] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
   const [com, setCom] = useState("");
   const [textbox, setTextbox] = useState<string | undefined>();
-  const [deviceID, setDeviceId] = useState<string>();
+  const [deviceId, setDeviceId] = useState<string>();
   const [likeloading, setLikeLoading] = useState(false);
   const [disLikeloading, setDisLikeLoading] = useState(false);
   const [commentLoading, setCommentLoading] = useState(false);
@@ -32,10 +34,10 @@ export default function AnonymousChat() {
   }, []);
 
   useEffect(() => {
-    GetPosts().then((result) => {
+    GetPosts(handle).then((result) => {
       if (result) setPosts(result);
     });
-  }, []);
+  }, [handle]);
 
   useEffect(() => {
     if (!textV) {
@@ -47,11 +49,6 @@ export default function AnonymousChat() {
       <div className="body">
         <div className="box">
           <div className="upperbox">
-            <img
-              className="bankers"
-              src={bankerslogo.src}
-              alt={bankerslogo.src}
-            />
             Bankers Village 1 HomeOwners Association
           </div>
           <div className="lowerbox">
@@ -67,10 +64,13 @@ export default function AnonymousChat() {
           <div className="send" hidden={hidden}>
             <button
               onClick={async () => {
+                setTextbox("closed");
                 if (textV) {
-                  const newPost = await createPost(textV);
-                  setPosts((p) => [...p, ...(newPost as Post[])]);
-                  setTextV("");
+                  if (deviceId) {
+                    const newPost = await createPost(textV, handle, deviceId);
+                    setPosts((p) => [...p, ...(newPost as Post[])]);
+                    setTextV("");
+                  }
                 }
               }}
             >
@@ -91,15 +91,25 @@ export default function AnonymousChat() {
             return (
               <div className="parentMessage" key={post.id}>
                 <div className="containerMessage">
-                  <div className="userName">Anonymous {formattedDate}</div>
+                  <div className="userName">
+                    Anonymous {formattedDate}
+                    <button
+                      onClick={() => {
+                        if (deviceId) deletePost(post.id, deviceId);
+                        setPosts((p) => p);
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  </div>
                   <div className="message">{post.content}</div>
                   <div className="action">
                     <button
                       disabled={likeloading}
-                      onClick={async () => {
-                        if (deviceID) {
+                      onClick={() => {
+                        if (deviceId) {
                           setLikeLoading(true);
-                          LikePost(post.id, deviceID).finally(() => {
+                          LikePost(post.id, deviceId).finally(() => {
                             setLikeLoading(false);
                           });
                           setPosts((p) => {
@@ -107,12 +117,12 @@ export default function AnonymousChat() {
                               p.id === post.id
                                 ? {
                                     ...p,
-                                    like: p.like.includes(deviceID)
-                                      ? p.like.filter((d) => d !== deviceID)
-                                      : [...p.like, deviceID],
+                                    like: p.like.includes(deviceId)
+                                      ? p.like.filter((d) => d !== deviceId)
+                                      : [...p.like, deviceId],
 
-                                    dislike: p.dislike.includes(deviceID)
-                                      ? p.dislike.filter((d) => d !== deviceID)
+                                    dislike: p.dislike.includes(deviceId)
+                                      ? p.dislike.filter((d) => d !== deviceId)
                                       : p.dislike,
                                   }
                                 : p
@@ -127,8 +137,8 @@ export default function AnonymousChat() {
                       disabled={disLikeloading}
                       onClick={() => {
                         setDisLikeLoading(true);
-                        if (deviceID) {
-                          DisLikePost(post.id, deviceID).finally(() => {
+                        if (deviceId) {
+                          DisLikePost(post.id, deviceId).finally(() => {
                             setDisLikeLoading(false);
                           });
                           setPosts((p) => {
@@ -136,12 +146,12 @@ export default function AnonymousChat() {
                               p.id === post.id
                                 ? {
                                     ...p,
-                                    dislike: p.dislike.includes(deviceID)
-                                      ? p.dislike.filter((d) => d !== deviceID)
-                                      : [...p.dislike, deviceID],
+                                    dislike: p.dislike.includes(deviceId)
+                                      ? p.dislike.filter((d) => d !== deviceId)
+                                      : [...p.dislike, deviceId],
 
-                                    like: p.like.includes(deviceID)
-                                      ? p.like.filter((d) => d !== deviceID)
+                                    like: p.like.includes(deviceId)
+                                      ? p.like.filter((d) => d !== deviceId)
                                       : p.like,
                                   }
                                 : p
@@ -160,7 +170,13 @@ export default function AnonymousChat() {
                     >
                       💬Comment
                     </button>
-                    <button>➣Share</button>
+                    <button
+                      onClick={() => {
+                        sharePost(post.id);
+                      }}
+                    >
+                      ➣Share
+                    </button>
                   </div>
                   <div className={textbox === post.id ? "textbox" : "closed"}>
                     <textarea

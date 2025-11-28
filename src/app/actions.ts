@@ -3,20 +3,28 @@ import { neon } from "@neondatabase/serverless";
 import { Post } from "./db";
 const sql = neon(process.env.DATABASE_URL!);
 
-export async function insertPost(content: string) {
+export async function insertPost(
+  content: string,
+  handle: string,
+  deviceId: string
+) {
   const newPost: Post = {
+    deviceId: deviceId,
     id: crypto.randomUUID(),
     content: content,
     date: new Date(),
     like: [],
     dislike: [],
     comments: [],
+    handle: handle,
   };
   await sql`
-    INSERT INTO posts (id, content, date, "like", dislike, comments)
-    VALUES (${newPost.id},${newPost.content},${newPost.date},${JSON.stringify(
-    newPost.like
-  )},${JSON.stringify(newPost.dislike)},${JSON.stringify(newPost.comments)});
+    INSERT INTO posts (deviceId, id, content, date, "like", dislike, comments,handle)
+    VALUES (${newPost.deviceId},${newPost.id},${newPost.content},${
+    newPost.date
+  },${JSON.stringify(newPost.like)},${JSON.stringify(
+    newPost.dislike
+  )},${JSON.stringify(newPost.comments)},${newPost.handle});
   `;
 
   const result = await sql`
@@ -24,12 +32,11 @@ export async function insertPost(content: string) {
     FROM posts 
     WHERE id = ${newPost.id};
   `;
-
   return result;
 }
 
-export async function getAll() {
-  const result = await sql`SELECT * FROM posts`;
+export async function getAll(handle: string) {
+  const result = await sql`SELECT * FROM posts where handle = ${handle}`;
   return result as Post[];
 }
 
@@ -111,5 +118,31 @@ export async function createCommmentPost(id: string, content: string) {
     where id = ${id}
   `;
 
+  return result;
+}
+
+export async function getSingle(id: string) {
+  const singleShare = await sql`select * from posts WHERE id =${id}`;
+  return singleShare;
+}
+
+export async function deleteSingle(id: string, deviceId: string) {
+  const dates = await sql`select date from posts where id =${id}`;
+  const devices = await sql`select deviceid from posts where id = ${id}`;
+  const date = dates[0].date;
+  const device = devices[0].deviceid;
+  const now = new Date();
+  const hoursPassed = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+  if (hoursPassed > 24) {
+    return {
+      success: false,
+      message: "Deletion not allowed after 24 hours",
+      hoursPassed,
+    };
+  }
+  if (deviceId !== device) {
+    return { success: false, message: "Error the posts is not yours" };
+  }
+  const result = await sql`DELETE FROM posts WHERE id = ${id}`;
   return result;
 }
