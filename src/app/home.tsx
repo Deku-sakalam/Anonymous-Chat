@@ -23,8 +23,14 @@ export default function AnonymousChat(props: { handle: string }) {
   const [commentLoading, setCommentLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [createPostLoading, SetCreatePostLoading] = useState(false);
 
   useEffect(() => {
+    if (!mounted) {
+      setMounted(true);
+      return;
+    }
     const existingDeviceID = localStorage.getItem("DeviceId");
     if (!existingDeviceID) {
       const randomId = crypto.randomUUID();
@@ -33,8 +39,7 @@ export default function AnonymousChat(props: { handle: string }) {
     } else {
       setDeviceId(existingDeviceID);
     }
-  }, []);
-  console.log("posts", posts);
+  }, [mounted]);
   useEffect(() => {
     GetPosts(handle).then((result) => {
       if (result)
@@ -64,18 +69,26 @@ export default function AnonymousChat(props: { handle: string }) {
           </div>
           <div className="send" hidden={hidden}>
             <button
+              disabled={createPostLoading}
               onClick={async () => {
                 setTextbox("closed");
+                SetCreatePostLoading(true);
                 if (textV) {
                   if (deviceId) {
-                    const newPost = await createPost(textV, handle, deviceId);
-                    setPosts((p) => [...p, ...(newPost as Post[])]);
+                    const newPost = await createPost(
+                      textV,
+                      handle,
+                      deviceId
+                    ).finally(() => {
+                      SetCreatePostLoading(false);
+                    });
+                    setPosts((p) => [...(newPost as Post[]), ...p]);
                     setTextV("");
                   }
                 }
               }}
             >
-              Post!
+              {createPostLoading ? "loading" : "Post"}
             </button>
           </div>
         </div>
