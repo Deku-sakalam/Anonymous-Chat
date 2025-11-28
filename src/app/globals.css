@@ -161,6 +161,67 @@ html {
   background: rgba(255, 255, 255, 0.15);
 }
 
+/* SUCCESS MESSAGE */
+.successBox {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* center both axes */
+  background: #4caf50;
+  color: white;
+  padding: 16px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+  font-size: 1.1rem;
+  font-weight: 600;
+  z-index: 9999;
+  animation: fadeInOut 3s ease forwards;
+  text-align: center;
+}
+
+/* ERROR MESSAGE */
+.errorBox {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* center horizontally & vertically */
+  background: #e53935;
+  color: white;
+  padding: 16px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+  font-size: 1.1rem;
+  font-weight: 600;
+  z-index: 9999;
+  animation: fadeInOut 3s ease forwards;
+  text-align: center;
+}
+
+/* SINGLE FADE ANIMATION (fixed) */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+
+  10% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  90% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+
 /* LOGO IN HEADER */
 .bankers {
   height: 40px;
@@ -196,7 +257,7 @@ html {
   padding-top: 1rem;
 }
 
-/* POST BUTTON (BLACK VERSION) */
+/* POST BUTTON */
 .send button {
   width: 100%;
   padding-top: 1rem;

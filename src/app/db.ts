@@ -9,7 +9,7 @@ import {
 } from "./actions";
 
 export type Post = {
-  deviceId: string;
+  deviceid: string;
   id: string;
   content: string;
   like: string[];

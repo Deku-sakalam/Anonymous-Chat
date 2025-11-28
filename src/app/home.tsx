@@ -21,6 +21,8 @@ export default function AnonymousChat(props: { handle: string }) {
   const [likeloading, setLikeLoading] = useState(false);
   const [disLikeloading, setDisLikeLoading] = useState(false);
   const [commentLoading, setCommentLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   useEffect(() => {
     const existingDeviceID = localStorage.getItem("DeviceId");
@@ -32,10 +34,11 @@ export default function AnonymousChat(props: { handle: string }) {
       setDeviceId(existingDeviceID);
     }
   }, []);
-
+  console.log("posts", posts);
   useEffect(() => {
     GetPosts(handle).then((result) => {
-      if (result) setPosts(result);
+      if (result)
+        setPosts(result.sort((a, b) => b.like.length - a.like.length));
     });
   }, [handle]);
 
@@ -48,9 +51,7 @@ export default function AnonymousChat(props: { handle: string }) {
     <div className="wrapper">
       <div className="body">
         <div className="box">
-          <div className="upperbox">
-            Bankers Village 1 HomeOwners Association
-          </div>
+          <div className="upperbox">Create A Post Anonymously </div>
           <div className="lowerbox">
             <textarea
               className="textarea"
@@ -79,7 +80,7 @@ export default function AnonymousChat(props: { handle: string }) {
           </div>
         </div>
         <div className="containerMessages">
-          {[...posts].reverse().map((post: Post) => {
+          {posts.map((post: Post) => {
             const comments = post.comments ?? [];
             const formattedDate = new Date(post.date).toLocaleString("en-US", {
               month: "short",
@@ -93,14 +94,29 @@ export default function AnonymousChat(props: { handle: string }) {
                 <div className="containerMessage">
                   <div className="userName">
                     Anonymous {formattedDate}
-                    <button
-                      onClick={() => {
-                        if (deviceId) deletePost(post.id, deviceId);
-                        setPosts((p) => p);
-                      }}
-                    >
-                      🗑️
-                    </button>
+                    {post.deviceid === deviceId ? (
+                      <button
+                        onClick={async () => {
+                          if (deviceId) {
+                            const result = await deletePost(post.id, deviceId);
+                            if (result) {
+                              if (!result.success) {
+                                setShowError(true);
+                                setTimeout(() => setShowError(false), 3000);
+                              } else {
+                                setShowSuccess(true);
+                                setTimeout(() => setShowSuccess(false), 3000);
+                                setPosts((p) =>
+                                  p.filter((d) => d.id !== post.id)
+                                );
+                              }
+                            }
+                          }
+                        }}
+                      >
+                        🗑️
+                      </button>
+                    ) : null}
                   </div>
                   <div className="message">{post.content}</div>
                   <div className="action">
@@ -230,7 +246,15 @@ export default function AnonymousChat(props: { handle: string }) {
                       );
                     })}
                   </div>
+                  {showSuccess && (
+                    <div className="successBox">
+                      ✅ Post successfully deleted!
+                    </div>
+                  )}
                 </div>
+                {showError && (
+                  <div className="errorBox">❌ Failed to delete post!</div>
+                )}
               </div>
             );
           })}

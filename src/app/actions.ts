@@ -9,7 +9,7 @@ export async function insertPost(
   deviceId: string
 ) {
   const newPost: Post = {
-    deviceId: deviceId,
+    deviceid: deviceId,
     id: crypto.randomUUID(),
     content: content,
     date: new Date(),
@@ -20,7 +20,7 @@ export async function insertPost(
   };
   await sql`
     INSERT INTO posts (deviceId, id, content, date, "like", dislike, comments,handle)
-    VALUES (${newPost.deviceId},${newPost.id},${newPost.content},${
+    VALUES (${newPost.deviceid},${newPost.id},${newPost.content},${
     newPost.date
   },${JSON.stringify(newPost.like)},${JSON.stringify(
     newPost.dislike
@@ -36,7 +36,8 @@ export async function insertPost(
 }
 
 export async function getAll(handle: string) {
-  const result = await sql`SELECT * FROM posts where handle = ${handle}`;
+  const result =
+    await sql`SELECT * FROM posts where handle = ${handle} order by date desc`;
   return result as Post[];
 }
 
@@ -127,22 +128,25 @@ export async function getSingle(id: string) {
 }
 
 export async function deleteSingle(id: string, deviceId: string) {
-  const dates = await sql`select date from posts where id =${id}`;
-  const devices = await sql`select deviceid from posts where id = ${id}`;
+  const dates = await sql`select date,deviceid from posts where id =${id}`;
   const date = dates[0].date;
-  const device = devices[0].deviceid;
+  const device = dates[0].deviceid;
   const now = new Date();
   const hoursPassed = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
   if (hoursPassed > 24) {
     return {
       success: false,
-      message: "Deletion not allowed after 24 hours",
-      hoursPassed,
     };
   }
   if (deviceId !== device) {
-    return { success: false, message: "Error the posts is not yours" };
+    return {
+      success: false,
+    };
   }
-  const result = await sql`DELETE FROM posts WHERE id = ${id}`;
-  return result;
+  if (hoursPassed < 24 && deviceId == device) {
+    await sql`DELETE FROM posts WHERE id = ${id}`;
+    return {
+      success: true,
+    };
+  }
 }
