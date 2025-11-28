@@ -18,6 +18,7 @@ export default function AnonymousChat() {
   const [deviceID, setDeviceId] = useState<string>();
   const [likeloading, setLikeLoading] = useState(false);
   const [disLikeloading, setDisLikeLoading] = useState(false);
+  const [commentLoading, setCommentLoading] = useState(false);
 
   useEffect(() => {
     const existingDeviceID = localStorage.getItem("DeviceId");
@@ -169,8 +170,14 @@ export default function AnonymousChat() {
                       }}
                     ></textarea>
                     <button
+                      disabled={commentLoading}
                       onClick={async () => {
-                        const newPost = await commentPost(post.id, com);
+                        setCommentLoading(true);
+                        const newPost = await commentPost(post.id, com).finally(
+                          () => {
+                            setCommentLoading(false);
+                          }
+                        );
                         setPosts((p) => {
                           return p.map((p) =>
                             p.id === post.id
